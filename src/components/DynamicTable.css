@@ -1,0 +1,58 @@
+.dynamic-table-container {
+  margin-top: 20px;
+  overflow-x: auto;
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: var(
+    --bg-secondary,
+    #1e1e1e
+  ); /* Fallback to dark if var not defined */
+}
+
+.dynamic-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "Inter", sans-serif;
+  font-size: 0.9rem;
+  color: var(--text-primary, #e0e0e0);
+}
+
+.dynamic-table th,
+.dynamic-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color, #333);
+}
+
+.dynamic-table th {
+  background-color: var(--bg-tertiary, #2d2d2d);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary, #a0a0a0);
+  position: sticky;
+  top: 0;
+}
+
+.dynamic-table tbody tr:hover {
+  background-color: var(--row-hover, #252525);
+}
+
+.dynamic-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Scrollbar styling for webkit */
+.dynamic-table-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.dynamic-table-container::-webkit-scrollbar-track {
+  background: var(--bg-secondary, #1e1e1e);
+}
+
+.dynamic-table-container::-webkit-scrollbar-thumb {
+  background-color: var(--scroll-thumb, #555);
+  border-radius: 4px;
+}

@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { TextArea } from "./TextArea";
 import { Button } from "./Button";
+import { DynamicTable } from "./DynamicTable";
 import "./AssistantChat.css";
 
 export const AssistantChat = () => {
@@ -8,6 +9,7 @@ export const AssistantChat = () => {
     message: "",
   });
   const [modelResponse, setModelResponse] = useState("");
+  const [tableData, setTableData] = useState<Array<Record<string, any>>>([]);
   const [charCount, setCharCount] = useState(userMessage.message.length);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -22,6 +24,7 @@ export const AssistantChat = () => {
     console.log("Text submitted:", userMessage.message);
     setIsLoading(true);
 
+    // Sends the message to the LLM server
     try {
       const response = await fetch("http://127.0.0.1:8000/api/chat", {
         method: "POST",
@@ -36,9 +39,14 @@ export const AssistantChat = () => {
       }
 
       const data = await response.json();
-      console.log("Response from server:", data);
+      console.log("Response from LLM server:", data);
       // Handle success (e.g., show a message or clear the input)
       setModelResponse(data.content);
+      if (data.table_data) {
+        setTableData(data.table_data);
+      } else {
+        setTableData([]);
+      }
     } catch (error) {
       console.error("Failed to send message:", error);
       // Handle error (e.g., show an error message)
@@ -50,6 +58,8 @@ export const AssistantChat = () => {
   const handleClear = () => {
     setUserMessage({ ...userMessage, message: "" });
     setCharCount(0);
+    setModelResponse("");
+    setTableData([]);
   };
 
   return (
@@ -103,6 +113,7 @@ export const AssistantChat = () => {
         <section className="footer-text">Respuesta:</section>
         <section className="footer-text">
           <h3>{modelResponse}</h3>
+          {tableData.length > 0 && <DynamicTable data={tableData} />}
         </section>
       </div>
     </div>
