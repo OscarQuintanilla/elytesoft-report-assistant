@@ -1,4 +1,6 @@
 import React from "react";
+import * as XLSX from "xlsx";
+import { Button } from "./Button";
 import "./DynamicTable.css";
 
 interface DynamicTableProps {
@@ -12,8 +14,24 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({ data }) => {
 
   const headers = Object.keys(data[0]);
 
+  const handleExport = () => {
+    // timestamp for unique filename
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const filename = `report_data_${timestamp}.xlsx`;
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Report");
+    XLSX.writeFile(workbook, filename);
+  };
+
   return (
     <div className="dynamic-table-container">
+      <div className="dynamic-table-actions" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+        <Button onClick={handleExport} variant="social" style={{ padding: '8px 16px', fontSize: '0.9rem' }}>
+          📤 Export to Excel
+        </Button>
+      </div>
       <table className="dynamic-table">
         <thead>
           <tr>
