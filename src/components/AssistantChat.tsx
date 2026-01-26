@@ -39,17 +39,47 @@ export const AssistantChat = () => {
       }
 
       const data = await response.json();
-      console.log("Response from LLM server:", data);
-      // Handle success (e.g., show a message or clear the input)
+      console.log("Response from LLM server:", data.content);
       setModelResponse(data.content);
-      if (data.table_data) {
+
+      // Check if the response content is a SQL query
+      const content = data.content?.trim();
+      console.log("Quering:", content);
+      if (content && content.toUpperCase().startsWith("SELECT")) {
+        try {
+          const sqlResponse = await fetch("http://127.0.0.1:8000/api/execute-sql", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ query: content }),
+          });
+
+          if (sqlResponse.ok) {
+            const sqlData = await sqlResponse.json();
+            console.log("Response data from SQL server:", sqlData);
+
+            if (sqlData.error) {
+              setModelResponse((prev) => prev + "\n[SQL Error]: " + sqlData.error);
+              setTableData([]);
+            } else if (sqlData.table_data) {
+              setTableData(sqlData.table_data);
+            } else {
+              setTableData([]);
+            }
+          } else {
+            console.error("SQL execution failed");
+          }
+        } catch (error) {
+          console.error("Failed to execute SQL:", error);
+        }
+      } else if (data.table_data) {
         setTableData(data.table_data);
       } else {
         setTableData([]);
       }
     } catch (error) {
       console.error("Failed to send message:", error);
-      // Handle error (e.g., show an error message)
     } finally {
       setIsLoading(false);
     }
