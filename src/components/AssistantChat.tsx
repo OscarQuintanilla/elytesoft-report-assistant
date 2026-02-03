@@ -1,7 +1,8 @@
-import { useState, type FormEvent } from "react";
+import { useState, useCallback, type FormEvent } from "react";
 import { TextArea } from "./TextArea";
 import { Button } from "./Button";
 import { DynamicTable } from "./DynamicTable";
+import { VoiceRecorderButton } from "./VoiceRecorderButton";
 import "./AssistantChat.css";
 
 export const AssistantChat = () => {
@@ -13,20 +14,45 @@ export const AssistantChat = () => {
   const [charCount, setCharCount] = useState(userMessage.message.length);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Handle voice transcript updates
+  const handleTranscriptChange = useCallback((text: string) => {
+    setUserMessage((prev) => ({ ...prev, message: text }));
+    setCharCount(text.length);
+  }, []);
+
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value;
     setUserMessage({ ...userMessage, message: newText });
     setCharCount(newText.length);
   };
 
+  // Clean SQL query from markdown code blocks and extra characters
+  const cleanSqlQuery = (rawQuery: string): string => {
+    let cleaned = rawQuery.trim();
+
+    // Remove markdown code blocks (```sql ... ``` or ``` ... ```)
+    cleaned = cleaned.replace(/^```(?:sql|SQL)?\s*/i, "");
+    cleaned = cleaned.replace(/\s*```$/i, "");
+
+    // Remove any remaining backticks at start/end
+    cleaned = cleaned.replace(/^`+|`+$/g, "");
+
+    // Trim whitespace again
+    cleaned = cleaned.trim();
+
+    return cleaned;
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     console.log("Text submitted:", userMessage.message);
     setIsLoading(true);
+    setTableData([]);
 
-    // Sends the message to the LLM server
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/chat", {
+      // Step 1: Send message to LLM to generate SQL query
+      console.log("User message:", userMessage);
+      const llmResponse = await fetch("http://127.0.0.1:8000/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -34,22 +60,52 @@ export const AssistantChat = () => {
         body: JSON.stringify(userMessage),
       });
 
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
+      if (!llmResponse.ok) {
+        throw new Error(`Error: ${llmResponse.statusText}`);
       }
 
-      const data = await response.json();
-      console.log("Response from LLM server:", data);
-      // Handle success (e.g., show a message or clear the input)
-      setModelResponse(data.content);
-      if (data.table_data) {
-        setTableData(data.table_data);
-      } else {
-        setTableData([]);
+      console.log("LLM Response:", llmResponse);
+
+      const llmData = await llmResponse.json();
+      console.log("LLM Data:", JSON.stringify(llmData));
+      console.log("SQL Query from LLM:", llmData.content);
+      setModelResponse(llmData.content);
+
+      // Step 2: Execute the generated SQL query against the database
+      const sqlQuery = cleanSqlQuery(llmData.content);
+      console.log("Cleaned SQL Query:", sqlQuery);
+
+      // Only execute if it looks like a valid SQL query
+      if (sqlQuery && sqlQuery.toUpperCase().includes("SELECT")) {
+        const sqlResponse = await fetch(
+          "http://127.0.0.1:8000/api/execute-sql",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ query: sqlQuery }),
+          },
+        );
+
+        if (!sqlResponse.ok) {
+          throw new Error(`Error executing SQL: ${sqlResponse.statusText}`);
+        }
+
+        const sqlData = await sqlResponse.json();
+        console.log("Data from database:", sqlData);
+
+        if (sqlData.error) {
+          console.error("SQL Error:", sqlData.error);
+          setTableData([]);
+        } else if (sqlData.table_data && sqlData.table_data.length > 0) {
+          setTableData(sqlData.table_data);
+        } else {
+          setTableData([]);
+        }
       }
     } catch (error) {
-      console.error("Failed to send message:", error);
-      // Handle error (e.g., show an error message)
+      console.error("Failed to process request:", error);
     } finally {
       setIsLoading(false);
     }
@@ -76,16 +132,19 @@ export const AssistantChat = () => {
         <TextArea
           id="main-text"
           label="Descripción:"
-          placeholder="..."
+          placeholder="Describe el informe que necesitas..."
           value={userMessage.message}
           onChange={handleTextChange}
           rows={8}
           autoFocus={true}
         />
 
-        {/* Character Count */}
-        <div className="assistant-chat-text-info">
-          <span className="char-count">{charCount} characters</span>
+        {/* Input Actions Bar */}
+        <div className="assistant-chat-actions-bar">
+          <VoiceRecorderButton
+            onTranscriptChange={handleTranscriptChange}
+            disabled={isLoading}
+          />
         </div>
 
         {/* Action Buttons */}
@@ -103,7 +162,7 @@ export const AssistantChat = () => {
             variant="primary"
             disabled={userMessage.message.length === 0 || isLoading}
           >
-            {isLoading ? "Enviando..." : "Submit"}
+            {isLoading ? "Enviando..." : "Solicitar informe"}
           </Button>
         </div>
       </form>

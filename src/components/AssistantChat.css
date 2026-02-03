@@ -78,17 +78,33 @@
   gap: var(--spacing-md);
 }
 
-/* Text Info */
-.assistant-chat-text-info {
+/* Actions Bar (Voice Button + Character Count) */
+.assistant-chat-actions-bar {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) 0;
   margin-top: calc(var(--spacing-xs) * -1);
+}
+
+.assistant-chat-actions-bar .voice-recorder-container {
+  flex-direction: row;
+  gap: var(--spacing-sm);
+}
+
+.assistant-chat-actions-bar .voice-recorder-label {
+  font-size: 12px;
+  letter-spacing: 0.3px;
 }
 
 .char-count {
   font-size: 13px;
   color: var(--text-muted);
   font-weight: 500;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* Button Group */

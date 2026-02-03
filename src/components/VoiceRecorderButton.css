@@ -1,0 +1,277 @@
+/* Voice Recorder Button */
+.voice-recorder-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.voice-recorder-btn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.15),
+    rgba(118, 75, 162, 0.15)
+  );
+  border: 2px solid rgba(102, 126, 234, 0.3);
+  color: var(--text-primary);
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: visible;
+  backdrop-filter: blur(10px);
+  box-shadow:
+    0 4px 20px rgba(102, 126, 234, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Decorative outer ring */
+.voice-recorder-btn::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.voice-recorder-btn:hover:not(:disabled) {
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.3),
+    rgba(118, 75, 162, 0.3)
+  );
+  border-color: rgba(102, 126, 234, 0.6);
+  transform: scale(1.08);
+  box-shadow:
+    0 8px 32px rgba(102, 126, 234, 0.3),
+    0 0 40px rgba(102, 126, 234, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.voice-recorder-btn:hover:not(:disabled)::before {
+  border-color: rgba(102, 126, 234, 0.4);
+  transform: scale(1.1);
+}
+
+.voice-recorder-btn:active:not(:disabled) {
+  transform: scale(0.95);
+  box-shadow:
+    0 2px 10px rgba(102, 126, 234, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.voice-recorder-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+
+/* Listening State - Active Recording */
+.voice-recorder-btn.listening {
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.25),
+    rgba(236, 72, 153, 0.25)
+  );
+  border-color: rgba(239, 68, 68, 0.7);
+  color: #ef4444;
+  animation: voice-glow 1.5s ease-in-out infinite;
+  transform: scale(1.05);
+}
+
+@keyframes voice-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 20px rgba(239, 68, 68, 0.3),
+      0 0 40px rgba(239, 68, 68, 0.1),
+      inset 0 0 20px rgba(239, 68, 68, 0.05);
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgba(239, 68, 68, 0.5),
+      0 0 60px rgba(239, 68, 68, 0.2),
+      inset 0 0 30px rgba(239, 68, 68, 0.1);
+  }
+}
+
+/* Pulsing ring when listening */
+.voice-recorder-btn.listening::before {
+  border: 2px solid rgba(239, 68, 68, 0.6);
+  animation: pulse-ring-outer 1.5s ease-out infinite;
+}
+
+.voice-recorder-btn.listening::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  animation: pulse-ring-inner 1.5s ease-out infinite 0.2s;
+  pointer-events: none;
+}
+
+@keyframes pulse-ring-outer {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+    border-color: rgba(239, 68, 68, 0.6);
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+    border-color: rgba(239, 68, 68, 0);
+  }
+}
+
+@keyframes pulse-ring-inner {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* Error State */
+.voice-recorder-btn.error {
+  background: linear-gradient(
+    135deg,
+    rgba(251, 191, 36, 0.2),
+    rgba(245, 158, 11, 0.2)
+  );
+  border-color: rgba(251, 191, 36, 0.6);
+  color: #fbbf24;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-3px);
+  }
+  40% {
+    transform: translateX(3px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
+}
+
+/* Unsupported State */
+.voice-recorder-btn.unsupported {
+  background: linear-gradient(
+    135deg,
+    rgba(107, 114, 128, 0.2),
+    rgba(75, 85, 99, 0.2)
+  );
+  border-color: rgba(107, 114, 128, 0.3);
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.voice-recorder-btn.unsupported::before {
+  display: none;
+}
+
+/* Label below button */
+.voice-recorder-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: color 0.3s ease;
+  white-space: nowrap;
+}
+
+.voice-recorder-container:hover .voice-recorder-label {
+  color: var(--text-secondary);
+}
+
+.voice-recorder-btn.listening + .voice-recorder-label {
+  color: #ef4444;
+  animation: blink-text 1s ease-in-out infinite;
+}
+
+@keyframes blink-text {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Error message tooltip */
+.voice-recorder-error {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: #fbbf24;
+  white-space: nowrap;
+  background: rgba(0, 0, 0, 0.9);
+  padding: 6px 12px;
+  border-radius: 8px;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  animation: fadeIn 0.3s ease;
+}
+
+.voice-recorder-error::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-bottom-color: rgba(0, 0, 0, 0.9);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .voice-recorder-btn {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    font-size: 20px;
+  }
+
+  .voice-recorder-label {
+    font-size: 10px;
+  }
+}
