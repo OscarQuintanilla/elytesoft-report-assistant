@@ -1,4 +1,4 @@
-import { useState, useCallback, type FormEvent } from "react";
+import { useState, useCallback, type FormEvent, type ChangeEvent } from "react";
 import { TextArea } from "./TextArea";
 import { Button } from "./Button";
 import { DynamicTable } from "./DynamicTable";
@@ -11,19 +11,16 @@ export const AssistantChat = () => {
   });
   const [modelResponse, setModelResponse] = useState("");
   const [tableData, setTableData] = useState<Array<Record<string, any>>>([]);
-  const [charCount, setCharCount] = useState(userMessage.message.length);
   const [isLoading, setIsLoading] = useState(false);
 
   // Handle voice transcript updates
   const handleTranscriptChange = useCallback((text: string) => {
     setUserMessage((prev) => ({ ...prev, message: text }));
-    setCharCount(text.length);
   }, []);
 
-  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleTextChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value;
     setUserMessage({ ...userMessage, message: newText });
-    setCharCount(newText.length);
   };
 
   // Clean SQL query from markdown code blocks and extra characters
@@ -63,8 +60,6 @@ export const AssistantChat = () => {
       if (!llmResponse.ok) {
         throw new Error(`Error: ${llmResponse.statusText}`);
       }
-
-      console.log("LLM Response:", llmResponse);
 
       const llmData = await llmResponse.json();
       console.log("LLM Data:", JSON.stringify(llmData));
@@ -113,7 +108,6 @@ export const AssistantChat = () => {
 
   const handleClear = () => {
     setUserMessage({ ...userMessage, message: "" });
-    setCharCount(0);
     setModelResponse("");
     setTableData([]);
   };
