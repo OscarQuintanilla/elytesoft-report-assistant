@@ -6,10 +6,12 @@
 }
 
 .form-group label {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--text-secondary);
-  margin-left: 4px;
+  margin-left: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .input-wrapper {
@@ -18,20 +20,20 @@
 
 .input-icon {
   position: absolute;
-  left: 16px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-muted);
-  font-size: 18px;
+  font-size: 17px;
   pointer-events: none;
   transition: color var(--transition-base);
 }
 
 .form-input {
   width: 100%;
-  padding: 14px 16px 14px 48px;
-  background: var(--surface);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 13px 16px 13px 44px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border);
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font-size: 15px;
@@ -45,11 +47,12 @@
 }
 
 .form-input:focus {
-  background: var(--surface-hover);
-  border-color: rgba(102, 126, 234, 0.5);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+  background: var(--bg-surface);
 }
 
-.form-input:focus + .input-icon {
-  color: #667eea;
+.form-input:focus ~ .input-icon,
+.input-wrapper:focus-within .input-icon {
+  color: var(--accent);
 }

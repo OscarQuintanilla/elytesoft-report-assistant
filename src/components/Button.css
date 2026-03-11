@@ -1,9 +1,9 @@
 /* Buttons */
 .btn {
-  padding: 14px 24px;
+  padding: 12px 22px;
   border: none;
   border-radius: var(--radius-md);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
@@ -11,15 +11,29 @@
   outline: none;
   position: relative;
   overflow: hidden;
+  letter-spacing: 0.01em;
 }
 
+/* Primary – solid accent */
 .btn-primary {
-  background: var(--primary-gradient);
-  color: white;
-  box-shadow: var(--shadow-md);
+  background: var(--accent);
+  color: #ffffff;
+  box-shadow: var(--accent-glow);
   margin-top: var(--spacing-sm);
 }
 
+.btn-primary:hover {
+  background: var(--accent-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(82, 79, 255, 0.35);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: var(--accent-glow);
+}
+
+/* Sheen sweep on hover */
 .btn-primary::before {
   content: "";
   position: absolute;
@@ -30,28 +44,20 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.18),
     transparent
   );
-  transition: left 0.5s;
+  transition: left 0.45s;
 }
 
 .btn-primary:hover::before {
   left: 100%;
 }
 
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-}
-
-.btn-primary:active {
-  transform: translateY(0);
-}
-
+/* Social / Secondary – outlined */
 .btn-social {
-  background: var(--surface);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   color: var(--text-primary);
   display: flex;
   align-items: center;
@@ -60,11 +66,16 @@
 }
 
 .btn-social:hover {
-  background: var(--surface-hover);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.btn-social:active {
+  transform: translateY(0);
 }
 
 .social-icon {
-  font-size: 20px;
+  font-size: 18px;
 }

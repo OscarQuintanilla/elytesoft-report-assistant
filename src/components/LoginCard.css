@@ -3,20 +3,19 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 440px;
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 420px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   padding: var(--spacing-xl);
-  box-shadow: var(--shadow-lg), var(--shadow-glow);
-  animation: slideUp 0.6s ease-out;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.5s ease-out;
 }
 
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(24px);
   }
   to {
     opacity: 1;
@@ -31,54 +30,36 @@
 }
 
 .logo-icon {
-  width: 64px;
-  height: 64px;
+  width: 60px;
+  height: 60px;
   margin: 0 auto var(--spacing-md);
-  background: var(--primary-gradient);
+  background: var(--accent);
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
-  box-shadow: var(--shadow-md);
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
-  }
-  50% {
-    transform: scale(1.05);
-    box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
-  }
+  font-size: 28px;
+  box-shadow: var(--accent-glow);
 }
 
 .logo-section h1 {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 700;
-  margin-bottom: var(--spacing-xs);
-  background: var(--primary-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  margin-bottom: 4px;
+  color: var(--accent);
+  letter-spacing: -0.02em;
 }
 
 .logo-section h2 {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: var(--spacing-sm);
-  background: var(--secondary-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: var(--spacing-xs);
+  color: var(--text-secondary);
 }
 
 .logo-section p {
-  color: var(--text-secondary);
-  font-size: 14px;
+  color: var(--text-muted);
+  font-size: 13px;
 }
 
 /* Form Styles */
@@ -103,29 +84,29 @@
 }
 
 .checkbox-wrapper input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   cursor: pointer;
-  accent-color: #667eea;
+  accent-color: var(--accent);
 }
 
 .checkbox-wrapper label {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-secondary);
   cursor: pointer;
   margin: 0;
 }
 
 .forgot-link {
-  font-size: 14px;
-  color: #667eea;
+  font-size: 13px;
+  color: var(--accent);
   text-decoration: none;
   font-weight: 500;
   transition: color var(--transition-fast);
 }
 
 .forgot-link:hover {
-  color: #764ba2;
+  color: var(--accent-dark);
 }
 
 /* Divider */
@@ -135,7 +116,7 @@
   gap: var(--spacing-md);
   margin: var(--spacing-lg) 0;
   color: var(--text-muted);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .divider::before,
@@ -143,7 +124,7 @@
   content: "";
   flex: 1;
   height: 1px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border);
 }
 
 /* Social Buttons */
@@ -158,20 +139,20 @@
   text-align: center;
   margin-top: var(--spacing-lg);
   padding-top: var(--spacing-lg);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-secondary);
-  font-size: 14px;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 13px;
 }
 
 .signup-link {
-  color: #667eea;
+  color: var(--accent);
   text-decoration: none;
   font-weight: 600;
   transition: color var(--transition-fast);
 }
 
 .signup-link:hover {
-  color: #764ba2;
+  color: var(--accent-dark);
 }
 
 /* Responsive Design */
@@ -181,7 +162,7 @@
   }
 
   .logo-section h1 {
-    font-size: 24px;
+    font-size: 22px;
   }
 
   .social-buttons {

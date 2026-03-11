@@ -1,40 +1,55 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&display=swap");
 
 :root {
-  /* Color Palette */
-  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  /* ── Brand ── */
+  --accent:         #524FFF;
+  --accent-dark:    #3a38cc;
+  --accent-light:   rgba(82, 79, 255, 0.10);
+  --accent-glow:    0 4px 20px rgba(82, 79, 255, 0.25);
 
-  --bg-dark: #0a0e27;
-  --bg-darker: #050814;
-  --surface: rgba(255, 255, 255, 0.05);
-  --surface-hover: rgba(255, 255, 255, 0.08);
+  /* ── Surfaces ── */
+  --bg-page:        #F5F4F0;   /* bone white – outer canvas */
+  --bg-surface:     #FFFFFF;   /* cards, panels */
+  --bg-surface-alt: #FAFAF8;   /* slightly tinted surface */
+  --surface:        #FFFFFF;
+  --surface-hover:  #F0EFFF;   /* hover over interactive surface */
 
-  --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --text-muted: rgba(255, 255, 255, 0.5);
+  /* ── Text ── */
+  --text-primary:   #111827;
+  --text-secondary: #6B7280;
+  --text-muted:     #9CA3AF;
 
-  /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
-  --shadow-glow: 0 0 40px rgba(102, 126, 234, 0.3);
+  /* ── Borders ── */
+  --border:         #E5E3E0;
+  --border-focus:   #524FFF;
 
-  /* Spacing */
+  /* ── Shadows ── */
+  --shadow-sm:      0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md:      0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg:      0 10px 30px rgba(0, 0, 0, 0.10);
+  --shadow-glow:    var(--accent-glow);
+
+  /* ── DynamicTable ── */
+  --bg-secondary:   #FFFFFF;
+  --bg-tertiary:    #F5F4F0;
+  --border-color:   #E5E3E0;
+  --row-hover:      #F0EFFF;
+  --scroll-thumb:   #C8C6FF;
+
+  /* ── Spacing ── */
   --spacing-xs: 0.5rem;
   --spacing-sm: 1rem;
   --spacing-md: 1.5rem;
   --spacing-lg: 2rem;
   --spacing-xl: 3rem;
 
-  /* Border Radius */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
+  /* ── Radii ── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
 
-  /* Transitions */
+  /* ── Transitions ── */
   --transition-fast: 150ms ease;
   --transition-base: 250ms ease;
   --transition-slow: 400ms ease;
@@ -53,7 +68,7 @@ body {
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-  background: var(--bg-darker);
+  background: var(--bg-page);
   color: var(--text-primary);
   line-height: 1.6;
   overflow-x: hidden;
@@ -64,6 +79,5 @@ body {
 #root {
   min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
 }
