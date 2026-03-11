@@ -70,8 +70,9 @@ export const AssistantChat = () => {
       const sqlQuery = cleanSqlQuery(llmData.content);
       console.log("Cleaned SQL Query:", sqlQuery);
 
-      // Only execute if it looks like a valid SQL query
-      if (sqlQuery && sqlQuery.toUpperCase().includes("SELECT")) {
+      // Only execute if it looks like a valid SQL query (SELECT or EXEC)
+      const upperQuery = sqlQuery.toUpperCase();
+      if (upperQuery && (upperQuery.includes("SELECT") || upperQuery.includes("EXEC"))) {
         const sqlResponse = await fetch(
           "http://127.0.0.1:8000/api/execute-sql",
           {
