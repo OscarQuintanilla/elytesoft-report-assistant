@@ -57,6 +57,16 @@ export const AssistantChat = () => {
     inputRef.current?.focus();
   }, []);
 
+  const getApiUrl = (endpoint: string) => {
+    const host = window.location.hostname;
+    const protocol = window.location.protocol;
+    // If on localhost, use 127.0.0.1:8000, otherwise use the current host on port 8000
+    const baseUrl = host === "localhost" || host === "127.0.0.1" 
+      ? "http://127.0.0.1:8000" 
+      : `${protocol}//${host}:8000`;
+    return `${baseUrl}${endpoint}`;
+  };
+
   const sendMessage = async () => {
     const text = inputText.trim();
     if (!text || isLoading) return;
@@ -70,7 +80,7 @@ export const AssistantChat = () => {
 
     try {
       // 1. Send to LLM
-      const llmResponse = await fetch("http://127.0.0.1:8000/api/chat", {
+      const llmResponse = await fetch(getApiUrl("/api/chat"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: text, history: llmHistory }),
@@ -94,14 +104,11 @@ export const AssistantChat = () => {
         upperQuery &&
         (upperQuery.includes("SELECT") || upperQuery.includes("EXEC"))
       ) {
-        const sqlResponse = await fetch(
-          "http://127.0.0.1:8000/api/execute-sql",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ query: sqlQuery }),
-          },
-        );
+        const sqlResponse = await fetch(getApiUrl("/api/execute-sql"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: sqlQuery }),
+        });
 
         if (sqlResponse.ok) {
           const sqlData = await sqlResponse.json();
