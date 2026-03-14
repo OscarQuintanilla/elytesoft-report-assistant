@@ -1,23 +1,48 @@
-import { useState, useCallback, type FormEvent, type ChangeEvent } from "react";
-import { TextArea } from "./TextArea";
-import { Button } from "./Button";
+import {
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+  type FormEvent,
+  type KeyboardEvent,
+} from "react";
 import { DynamicTable } from "./DynamicTable";
 import { VoiceRecorderButton } from "./VoiceRecorderButton";
 import "./AssistantChat.css";
 
+// ── Types ──────────────────────────────────────────────────────────────────
+interface LLMHistoryEntry {
+  role: "user" | "assistant";
+  content: string;
+}
+
+interface ChatMessage {
+  id: number;
+  role: "user" | "assistant";
+  text: string;
+  tableData?: Array<Record<string, any>>;
+  rowCount?: number;
+}
+
+// ── Component ──────────────────────────────────────────────────────────────
 export const AssistantChat = () => {
-  const [userMessage, setUserMessage] = useState({ message: "" });
-  const [modelResponse, setModelResponse] = useState("");
-  const [tableData, setTableData] = useState<Array<Record<string, any>>>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [llmHistory, setLlmHistory] = useState<LLMHistoryEntry[]>([]);
+  const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [latestTableData, setLatestTableData] = useState<
+    Array<Record<string, any>>
+  >([]);
+  const [latestSql, setLatestSql] = useState("");
 
-  const handleTranscriptChange = useCallback((text: string) => {
-    setUserMessage((prev) => ({ ...prev, message: text }));
-  }, []);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const msgCounter = useRef(0);
 
-  const handleTextChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    setUserMessage({ ...userMessage, message: e.target.value });
-  };
+  // Auto-scroll to bottom whenever messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isLoading]);
 
   const cleanSqlQuery = (rawQuery: string): string => {
     let cleaned = rawQuery.trim();
@@ -27,56 +52,118 @@ export const AssistantChat = () => {
     return cleaned.trim();
   };
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleTranscriptChange = useCallback((text: string) => {
+    setInputText(text);
+    inputRef.current?.focus();
+  }, []);
+
+  const sendMessage = async () => {
+    const text = inputText.trim();
+    if (!text || isLoading) return;
+
+    // Append user bubble
+    const userId = ++msgCounter.current;
+    const userMsg: ChatMessage = { id: userId, role: "user", text };
+    setMessages((prev) => [...prev, userMsg]);
+    setInputText("");
     setIsLoading(true);
-    setTableData([]);
 
     try {
+      // 1. Send to LLM
       const llmResponse = await fetch("http://127.0.0.1:8000/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userMessage),
+        body: JSON.stringify({ message: text, history: llmHistory }),
       });
 
-      if (!llmResponse.ok) throw new Error(`Error: ${llmResponse.statusText}`);
+      if (!llmResponse.ok)
+        throw new Error(`LLM Error: ${llmResponse.statusText}`);
 
       const llmData = await llmResponse.json();
-      setModelResponse(llmData.content);
+      const sqlRaw: string = llmData.content ?? "";
+      const updatedHistory: LLMHistoryEntry[] = llmData.history ?? [];
+      setLlmHistory(updatedHistory);
 
-      const sqlQuery = cleanSqlQuery(llmData.content);
+      const sqlQuery = cleanSqlQuery(sqlRaw);
       const upperQuery = sqlQuery.toUpperCase();
 
-      if (upperQuery && (upperQuery.includes("SELECT") || upperQuery.includes("EXEC"))) {
-        const sqlResponse = await fetch("http://127.0.0.1:8000/api/execute-sql", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query: sqlQuery }),
-        });
+      let tableData: Array<Record<string, any>> = [];
 
-        if (!sqlResponse.ok) throw new Error(`Error executing SQL: ${sqlResponse.statusText}`);
+      // 2. Execute SQL if applicable
+      if (
+        upperQuery &&
+        (upperQuery.includes("SELECT") || upperQuery.includes("EXEC"))
+      ) {
+        const sqlResponse = await fetch(
+          "http://127.0.0.1:8000/api/execute-sql",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: sqlQuery }),
+          },
+        );
 
-        const sqlData = await sqlResponse.json();
-        if (sqlData.error) {
-          setTableData([]);
-        } else if (sqlData.table_data && sqlData.table_data.length > 0) {
-          setTableData(sqlData.table_data);
-        } else {
-          setTableData([]);
+        if (sqlResponse.ok) {
+          const sqlData = await sqlResponse.json();
+          if (!sqlData.error && sqlData.table_data?.length > 0) {
+            tableData = sqlData.table_data;
+          }
         }
+
+        setLatestSql(sqlQuery);
+        setLatestTableData(tableData);
       }
+
+      // 3. Append assistant bubble
+      const assistantId = ++msgCounter.current;
+      const assistantMsg: ChatMessage = {
+        id: assistantId,
+        role: "assistant",
+        text: sqlRaw,
+        tableData,
+        rowCount: tableData.length,
+      };
+      setMessages((prev) => [...prev, assistantMsg]);
     } catch (error) {
       console.error("Failed to process request:", error);
+      const errId = ++msgCounter.current;
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: errId,
+          role: "assistant",
+          text: "❌ Error al procesar la solicitud.",
+        },
+      ]);
     } finally {
       setIsLoading(false);
+      inputRef.current?.focus();
     }
   };
 
-  const handleClear = () => {
-    setUserMessage({ message: "" });
-    setModelResponse("");
-    setTableData([]);
+  const handleFormSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    sendMessage();
   };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  const handleNewConversation = () => {
+    setMessages([]);
+    setLlmHistory([]);
+    setLatestTableData([]);
+    setLatestSql("");
+    setInputText("");
+    msgCounter.current = 0;
+    inputRef.current?.focus();
+  };
+
+  const isEmpty = messages.length === 0 && !isLoading;
 
   return (
     <div className="chat-shell">
@@ -94,56 +181,103 @@ export const AssistantChat = () => {
 
       {/* ── Two-column body ── */}
       <div className="chat-body">
-        {/* Left: Query Panel */}
+        {/* Left: Chat Panel */}
         <aside className="chat-panel-left">
+          {/* Panel header */}
           <div className="chat-panel-header">
-            <h2 className="panel-title">Nueva consulta</h2>
-            <p className="panel-subtitle">
-              Describe el informe que necesitas y el asistente lo procesará automáticamente.
-            </p>
+            <h2 className="panel-title">Solicitar Reportes</h2>
+            <button
+              className="btn-new-chat"
+              onClick={handleNewConversation}
+              title="Nueva conversación"
+            >
+              + Nueva consulta
+            </button>
           </div>
 
-          <form className="chat-form" onSubmit={handleSubmit}>
-            <TextArea
-              id="main-text"
-              label="Descripción"
-              placeholder="Ej: Muéstrame las ventas por tipo de cliente del mes pasado..."
-              value={userMessage.message}
-              onChange={handleTextChange}
-              rows={10}
-              autoFocus={true}
+          {/* Messages area */}
+          <div className="chat-messages">
+            {isEmpty && (
+              <div className="chat-welcome">
+                <div className="chat-welcome-icon">💬</div>
+                <p className="chat-welcome-text">
+                  Describe el informe que necesitas. Puedes pedir cambios y
+                  ajustes en mensajes posteriores.
+                </p>
+              </div>
+            )}
+
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`chat-bubble-wrapper ${msg.role === "user" ? "user" : "assistant"}`}
+              >
+                <div
+                  className={`chat-bubble ${msg.role === "user" ? "chat-bubble-user" : "chat-bubble-assistant"}`}
+                >
+                  {msg.role === "assistant" ? (
+                    <>
+                      <span className="bubble-label">SQL generado</span>
+                      <pre className="bubble-sql">{msg.text}</pre>
+                      {msg.rowCount !== undefined && (
+                        <span className="bubble-meta">
+                          {msg.rowCount > 0
+                            ? `${msg.rowCount} fila${msg.rowCount !== 1 ? "s" : ""} devuelta${msg.rowCount !== 1 ? "s" : ""}`
+                            : "Sin resultados"}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <span>{msg.text}</span>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {isLoading && (
+              <div className="chat-bubble-wrapper assistant">
+                <div className="chat-bubble chat-bubble-assistant chat-bubble-typing">
+                  <span className="typing-dot" />
+                  <span className="typing-dot" />
+                  <span className="typing-dot" />
+                </div>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input bar */}
+          <form className="chat-input-bar" onSubmit={handleFormSubmit}>
+            <VoiceRecorderButton
+              onTranscriptChange={handleTranscriptChange}
+              disabled={isLoading}
             />
-
-            <div className="chat-form-actions">
-              <VoiceRecorderButton
-                onTranscriptChange={handleTranscriptChange}
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="chat-button-group">
-              <Button
-                type="button"
-                variant="social"
-                onClick={handleClear}
-                disabled={userMessage.message.length === 0 || isLoading}
-              >
-                Limpiar
-              </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={userMessage.message.length === 0 || isLoading}
-              >
-                {isLoading ? "Procesando…" : "Solicitar informe"}
-              </Button>
-            </div>
+            <textarea
+              ref={inputRef}
+              className="chat-input-field"
+              placeholder="Escribe tu consulta… (Enter para enviar)"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={handleKeyDown}
+              rows={2}
+              disabled={isLoading}
+              autoFocus
+            />
+            <button
+              type="submit"
+              className="chat-send-btn"
+              disabled={!inputText.trim() || isLoading}
+              title="Enviar"
+            >
+              ➤
+            </button>
           </form>
         </aside>
 
         {/* Right: Results Panel */}
         <main className="chat-panel-right">
-          {!modelResponse && !isLoading && (
+          {!latestSql && !isLoading && (
             <div className="chat-empty-state">
               <div className="empty-state-icon">📊</div>
               <h3>Los resultados aparecerán aquí</h3>
@@ -158,15 +292,15 @@ export const AssistantChat = () => {
             </div>
           )}
 
-          {!isLoading && modelResponse && (
+          {!isLoading && latestSql && (
             <div className="chat-results">
               <div className="chat-sql-block">
                 <span className="chat-sql-label">SQL generado</span>
-                <pre className="chat-sql-code">{modelResponse}</pre>
+                <pre className="chat-sql-code">{latestSql}</pre>
               </div>
 
-              {tableData.length > 0 ? (
-                <DynamicTable data={tableData} />
+              {latestTableData.length > 0 ? (
+                <DynamicTable data={latestTableData} />
               ) : (
                 <p className="chat-no-rows">La consulta no devolvió filas.</p>
               )}
