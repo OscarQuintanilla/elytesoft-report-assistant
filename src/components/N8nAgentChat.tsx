@@ -15,7 +15,7 @@ interface ChatMessage {
 }
 
 // ── Constants ──────────────────────────────────────────────────────────────
-const N8N_WEBHOOK_URL = "http://localhost:5678/webhook/report-assistant";
+const N8N_WEBHOOK_URL = import.meta.env.VITE_N8N_WEBHOOK_URL as string;
 
 // ── Component ──────────────────────────────────────────────────────────────
 export const N8nAgentChat = () => {
