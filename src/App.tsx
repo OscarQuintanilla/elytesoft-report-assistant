@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Login } from "./pages/Login";
 import { AssistantChatPage } from "./pages/AssistantChatPage";
+import { N8nAgentChatPage } from "./pages/N8nAgentChatPage";
 import "./App.css";
 
 function App() {
@@ -10,6 +11,7 @@ function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/chat" element={<AssistantChatPage />} />
+        <Route path="/pm" element={<N8nAgentChatPage />} />
       </Routes>
     </BrowserRouter>
   );
